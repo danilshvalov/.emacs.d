@@ -16,15 +16,19 @@
 
 ;; Configure use-package to use straight.el by default
 (use-package straight
-             :custom (straight-use-package-by-default t))
+  :custom (straight-use-package-by-default t))
+
+(require 'use-package-ensure)
+(setq use-package-always-ensure t)
 
 (use-package general
-    :ensure t
-    :config (general-evil-setup t))
+  :config (general-evil-setup t))
 
 (nmap "C-s-f" 'toggle-frame-fullscreen)
 
 (nmap "ZX" 'kill-current-buffer)
+
+(setq ns-right-option-modifier nil)
 
 (custom-set-faces
  `(default ((t (:font "JetBrains Mono 16"))))
@@ -33,28 +37,18 @@
  `(variable-pitch ((t (:font "JetBrains Mono 16")))))
 
 (use-package doom-themes
-  :ensure t
   :config (load-theme 'doom-palenight t))
 
 (add-hook 'prog-mode-hook (lambda ()
-    (display-line-numbers-mode)
-    (setq display-line-numbers 'relative)))
+                            (display-line-numbers-mode)
+                            (setq display-line-numbers 'relative)))
 (add-hook 'text-mode-hook (lambda ()
-    (display-line-numbers-mode)
-    (setq display-line-numbers 'relative)))
+                            (display-line-numbers-mode)
+                            (setq display-line-numbers 'relative)))
 
 (setq ring-bell-function 'ignore)
 
 (global-hl-line-mode +1)
-
-(use-package popper
-  :ensure t
-  :config
-    (setq popper-reference-buffers
-        (append popper-reference-buffers
-                '("^\\*vterm.*\\*$"  vterm-mode)))
-    (setq popper-window-height 15)
-    (popper-mode +1))
 
 (setq scroll-margin 10
       hscroll-margin 20
@@ -82,7 +76,6 @@
       inhibit-startup-screen t)
 
 (use-package nano-modeline
-  :ensure t
   :custom
   (nano-modeline-position 'bottom)
   :init (nano-modeline-mode 1))
@@ -107,14 +100,10 @@
 
 (setq split-width-threshold t)
 
-(use-package eglot
-  :ensure t)
-
 (electric-pair-mode +1)
 (electric-indent-mode +1)
 
 (use-package yasnippet
-  :ensure t
   :config
   (yas-global-mode +1)
 
@@ -130,13 +119,14 @@
 (setq-default tab-width 4)
 
 (use-package avy
-  :ensure t
   :config
   (setq avy-timeout-seconds 0.75)
   (nmap "s" 'avy-goto-char-timer))
 
+(use-package eglot
+  :ensure t)
+
 (use-package vertico
-  :ensure t
   :general
   (:keymaps 'vertico-map
             "C-j" 'vertico-next
@@ -147,10 +137,16 @@
   
   (setq vertico-count 10
         vertico-resize nil
-	vertico-cycle t))
+        vertico-cycle t)
+
+  (setq completion-in-region-function
+        (lambda (&rest args)
+          (apply (if vertico-mode
+                     #'consult-completion-in-region
+                   #'completion--in-region)
+                 args))))
 
 (use-package consult
-  :ensure t
   :custom
   (consult-preview-key nil)
   :config
@@ -161,8 +157,10 @@
     "f" 'consult-find
     "g" 'consult-ripgrep))
 
+(use-package marginalia
+  :init (marginalia-mode))
+
 (use-package orderless
-  :ensure t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles basic partial-completion)))))
@@ -177,6 +175,9 @@
   (corfu-count 5)
   (corfu-auto-prefix 2)
 
+  :general
+  (imap "C-n" 'completion-at-point)
+
   :hook ((prog-mode . corfu-mode)
          (shell-mode . corfu-mode)
          (eshell-mode . corfu-mode))
@@ -189,14 +190,13 @@
   (savehist-mode))
 
 (use-package evil
-  :ensure t
   :init
   (setq evil-want-keybinding nil
         evil-want-Y-yank-to-eol t
         evil-want-C-u-scroll t
-	    evil-undo-system 'undo-fu
-	    evil-split-window-below t
-		evil-vsplit-window-right t)
+        evil-undo-system 'undo-fu
+        evil-split-window-below t
+        evil-vsplit-window-right t)
   :config
   (evil-mode)
   (general-unbind 'evil-motion-state-map "TAB")
@@ -213,15 +213,15 @@
     :type exclusive
     (if count
         (let (line-move-visual) (evil-line-move (- count)))
-      (let ((line-move-visual t)) (evil-line-move -1)))))
+      (let ((line-move-visual t)) (evil-line-move -1))))
+
+  (evil-select-search-module 'evil-search-module 'evil-search))
 
 (use-package evil-collection
-  :ensure t
   :after evil
   :config (evil-collection-init))
 
 (use-package evil-goggles
-  :ensure t
   :custom
   (evil-goggles-enable-paste nil)
   (evil-goggles-enable-change nil)
@@ -230,19 +230,23 @@
   (evil-goggles-mode))
 
 (use-package evil-commentary
-  :ensure t
   :init (evil-commentary-mode))
 
 (use-package magit
-  :ensure t
   :config
-    (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
-    (nmap
-      :prefix "SPC g"
-      "g" 'magit))
+  (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+  (nmap
+    :prefix "SPC g"
+    "g" 'magit))
+
+(use-package git-gutter
+  :custom
+  (git-gutter:modified-sign "│")
+  (git-gutter:added-sign "│")
+  (git-gutter:deleted-sign "│")
+  :init (global-git-gutter-mode +1))
 
 (use-package flycheck
-  :ensure t
   :init (global-flycheck-mode))
 
 (setq make-backup-files nil)
@@ -266,14 +270,12 @@
   (ispell-hunspell-add-multi-dic "en_US,ru_RU"))
 
 (use-package flyspell-correct
-  :ensure t
   :after flyspell
   :general
   (nmap :keymaps 'flyspell-mode-map
     "z=" 'flyspell-correct-wrapper))
 
 (use-package flyspell-correct-avy-menu
-  :ensure t
   :after flyspell-correct
   :config (require 'flyspell-correct-avy-menu))
 
@@ -312,7 +314,6 @@ or session. Otherwise, the addition is permanent."
 
 (use-package pdf-tools
   :custom (pdf-view-display-size 'fit-height)
-  :ensure t
   :config
   (add-hook 'doc-view-mode-hook 'pdf-view-mode)
   (add-hook 'pdf-view-mode-hook 'pdf-isearch-minor-mode))
@@ -327,7 +328,6 @@ or session. Otherwise, the addition is permanent."
   :ensure t)
 
 (use-package vterm-toggle
-  :ensure t
   :general
   (nmap
     :prefix "SPC o"
@@ -336,10 +336,19 @@ or session. Otherwise, the addition is permanent."
     "T" 'vterm-toggle-cd)
   (nmap
     :keymaps 'vterm-mode-map
-    "q" 'vterm-toggle-hide))
+    "q" 'vterm-toggle-hide)
+  :config
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                   (let ((buffer (get-buffer buffer-or-name)))
+                     (with-current-buffer buffer
+                       (or (equal major-mode 'vterm-mode)
+                           (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                 (display-buffer-reuse-window display-buffer-at-bottom)
+                 (reusable-frames . visible)
+                 (window-height . 0.3))))
 
 (use-package tree-sitter
-  :ensure t
   :custom-face
   (tree-sitter-hl-face:property ((t (:slant normal))))
   :init
@@ -350,16 +359,13 @@ or session. Otherwise, the addition is permanent."
   :ensure t)
 
 (use-package reverse-im
-  :ensure t
   :custom (reverse-im-input-methods '("russian-computer"))
   :config (reverse-im-mode t))
 
 (use-package saveplace
-  :ensure t
   :init (save-place-mode))
 
 (use-package saveplace-pdf-view
-  :ensure t
   :after saveplace)
 
 (nmap
@@ -367,28 +373,27 @@ or session. Otherwise, the addition is permanent."
   :prefix "SPC o"
   "d" 'dired
   "D" (lambda ()
-		(interactive)
-		(dired default-directory)))
+        (interactive)
+        (dired default-directory)))
 
 (use-package projectile
-  :ensure t
   :init
   (projectile-mode +1))
 
 (add-hook 'org-mode-hook
-        (lambda ()
-          (org-indent-mode +1)
-          (setq org-edit-src-content-indentation 0)))
+          (lambda ()
+            (org-indent-mode +1)
+            (setq org-edit-src-content-indentation 0)))
 
 (add-hook 'python-mode-hook 'eglot-ensure)
 (add-to-list 'eglot-server-programs
              '(python-mode . ("pyright-langserver" "--stdio")))
 
-(use-package tex-mode
-  :ensure auctex
-  :config
-  (setq LaTeX-item-indent 0
-		  LaTeX-indent-level 4))
+(use-package tex
+  :straight auctex
+  :custom
+  (LaTeX-item-indent 0)
+  (LaTeX-indent-level 4))
 
 (add-hook 'LaTeX-mode-hook 'eglot-ensure)
 (add-to-list 'eglot-server-programs
