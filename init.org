@@ -43,6 +43,10 @@
 #+begin_src emacs-lisp
 (nmap "ZX" 'kill-current-buffer)
 #+end_src
+** Right option
+#+begin_src emacs-lisp
+(setq ns-right-option-modifier nil)
+#+end_src
 * Interface
 ** Font settings
 #+begin_src emacs-lisp
@@ -76,17 +80,6 @@
 ** Highlight current line
 #+begin_src emacs-lisp
 (global-hl-line-mode +1)
-#+end_src
-** Popups
-#+begin_src emacs-lisp
-(use-package popper
-  :ensure t
-  :config
-    (setq popper-reference-buffers
-        (append popper-reference-buffers
-                '("^\\*vterm.*\\*$"  vterm-mode)))
-    (setq popper-window-height 15)
-    (popper-mode +1))
 #+end_src
 ** Scrolling
 #+begin_src emacs-lisp
@@ -155,11 +148,6 @@
 (setq split-width-threshold t)
 #+end_src
 * Editing
-** Completion
-#+begin_src emacs-lisp
-(use-package eglot
-  :ensure t)
-#+end_src
 ** Electric
 #+begin_src emacs-lisp
 (electric-pair-mode +1)
@@ -258,6 +246,9 @@
   (corfu-auto-delay 0.75)
   (corfu-count 5)
   (corfu-auto-prefix 2)
+
+  :general
+  (imap "C-n" 'completion-at-point)
 
   :hook ((prog-mode . corfu-mode)
          (shell-mode . corfu-mode)
@@ -514,9 +505,9 @@ or session. Otherwise, the addition is permanent."
 ** Org-mode
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook
-        (lambda ()
-          (org-indent-mode +1)
-          (setq org-edit-src-content-indentation 0)))
+          (lambda ()
+            (org-indent-mode +1)
+            (setq org-edit-src-content-indentation 0)))
 #+end_src
 
 ** Python
@@ -529,11 +520,11 @@ or session. Otherwise, the addition is permanent."
 ** Latex
 *** Auctex
 #+begin_src emacs-lisp
-(use-package tex-mode
-  :ensure auctex
-  :config
-  (setq LaTeX-item-indent 0
-		  LaTeX-indent-level 4))
+(use-package tex
+  :straight auctex
+  :custom
+  (LaTeX-item-indent 0)
+  (LaTeX-indent-level 4))
 #+end_src
 *** LSP
 #+begin_src emacs-lisp
