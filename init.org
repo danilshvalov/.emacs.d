@@ -5,31 +5,33 @@
 
 * Bootstrap
 #+begin_src emacs-lisp
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-        (bootstrap-version 5))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-  ;; Install use-package
-  (straight-use-package 'use-package)
+;; Install use-package
+(straight-use-package 'use-package)
 
-  ;; Configure use-package to use straight.el by default
-  (use-package straight
-               :custom (straight-use-package-by-default t))
+;; Configure use-package to use straight.el by default
+(use-package straight
+  :custom (straight-use-package-by-default t))
+
+(require 'use-package-ensure)
+(setq use-package-always-ensure t)
 #+end_src
 
 #+begin_src emacs-lisp
 (use-package general
-    :ensure t
-    :config (general-evil-setup t))
+  :config (general-evil-setup t))
 #+end_src
 
 * Default keybinds
@@ -54,18 +56,17 @@
 ** Theme settings
 #+begin_src emacs-lisp
 (use-package doom-themes
-  :ensure t
   :config (load-theme 'doom-palenight t))
 #+end_src
 
 ** Line numbers
 #+begin_src emacs-lisp
 (add-hook 'prog-mode-hook (lambda ()
-    (display-line-numbers-mode)
-    (setq display-line-numbers 'relative)))
+                            (display-line-numbers-mode)
+                            (setq display-line-numbers 'relative)))
 (add-hook 'text-mode-hook (lambda ()
-    (display-line-numbers-mode)
-    (setq display-line-numbers 'relative)))
+                            (display-line-numbers-mode)
+                            (setq display-line-numbers 'relative)))
 #+end_src
 
 ** Ring bell
@@ -123,12 +124,10 @@
 ** Modeline
 #+begin_src emacs-lisp
 (use-package nano-modeline
-  :ensure t
   :custom
   (nano-modeline-position 'bottom)
   :init (nano-modeline-mode 1))
 #+end_src
-
 ** Todo highlights
 #+begin_src emacs-lisp
 (use-package hl-todo
@@ -170,7 +169,6 @@
 ** Snippets
 #+begin_src emacs-lisp
 (use-package yasnippet
-  :ensure t
   :config
   (yas-global-mode +1)
 
@@ -192,16 +190,19 @@
 ** Avy
 #+begin_src emacs-lisp
 (use-package avy
-  :ensure t
   :config
   (setq avy-timeout-seconds 0.75)
   (nmap "s" 'avy-goto-char-timer))
 #+end_src
 * Completion
+** LSP
+#+begin_src emacs-lisp
+(use-package eglot
+  :ensure t)
+#+end_src
 ** Vertico
 #+begin_src emacs-lisp
 (use-package vertico
-  :ensure t
   :general
   (:keymaps 'vertico-map
             "C-j" 'vertico-next
@@ -212,12 +213,18 @@
   
   (setq vertico-count 10
         vertico-resize nil
-	vertico-cycle t))
+        vertico-cycle t)
+
+  (setq completion-in-region-function
+        (lambda (&rest args)
+          (apply (if vertico-mode
+                     #'consult-completion-in-region
+                   #'completion--in-region)
+                 args))))
 #+end_src
 ** Consult
 #+begin_src emacs-lisp
 (use-package consult
-  :ensure t
   :custom
   (consult-preview-key nil)
   :config
@@ -227,9 +234,15 @@
     "r" 'consult-recent-file
     "f" 'consult-find
     "g" 'consult-ripgrep))
-
+#+end_src
+** Marginalia
+#+begin_src emacs-lisp
+(use-package marginalia
+  :init (marginalia-mode))
+#+end_src
+** Orderless
+#+begin_src emacs-lisp
 (use-package orderless
-  :ensure t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles basic partial-completion)))))
@@ -263,14 +276,13 @@
 ** Evil mode
 #+begin_src emacs-lisp
 (use-package evil
-  :ensure t
   :init
   (setq evil-want-keybinding nil
         evil-want-Y-yank-to-eol t
         evil-want-C-u-scroll t
-	    evil-undo-system 'undo-fu
-	    evil-split-window-below t
-		evil-vsplit-window-right t)
+        evil-undo-system 'undo-fu
+        evil-split-window-below t
+        evil-vsplit-window-right t)
   :config
   (evil-mode)
   (general-unbind 'evil-motion-state-map "TAB")
@@ -287,19 +299,19 @@
     :type exclusive
     (if count
         (let (line-move-visual) (evil-line-move (- count)))
-      (let ((line-move-visual t)) (evil-line-move -1)))))
+      (let ((line-move-visual t)) (evil-line-move -1))))
+
+  (evil-select-search-module 'evil-search-module 'evil-search))
 #+end_src
 ** Evil collection
 #+begin_src emacs-lisp
 (use-package evil-collection
-  :ensure t
   :after evil
   :config (evil-collection-init))
 #+end_src
 ** Evil highlights
 #+begin_src emacs-lisp
 (use-package evil-goggles
-  :ensure t
   :custom
   (evil-goggles-enable-paste nil)
   (evil-goggles-enable-change nil)
@@ -310,25 +322,31 @@
 ** Evil commentary
 #+begin_src emacs-lisp
 (use-package evil-commentary
-  :ensure t
   :init (evil-commentary-mode))
 #+end_src
 * Git
 ** Magit
 #+begin_src emacs-lisp
 (use-package magit
-  :ensure t
   :config
-    (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
-    (nmap
-      :prefix "SPC g"
-      "g" 'magit))
+  (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+  (nmap
+    :prefix "SPC g"
+    "g" 'magit))
+#+end_src
+** Git gutter
+#+begin_src emacs-lisp
+(use-package git-gutter
+  :custom
+  (git-gutter:modified-sign "│")
+  (git-gutter:added-sign "│")
+  (git-gutter:deleted-sign "│")
+  :init (global-git-gutter-mode +1))
 #+end_src
 * Tools
 ** Flycheck
 #+begin_src emacs-lisp
 (use-package flycheck
-  :ensure t
   :init (global-flycheck-mode))
 #+end_src
 ** Autosave
@@ -361,14 +379,12 @@
 *** Flyspell correct
 #+begin_src emacs-lisp
 (use-package flyspell-correct
-  :ensure t
   :after flyspell
   :general
   (nmap :keymaps 'flyspell-mode-map
     "z=" 'flyspell-correct-wrapper))
 
 (use-package flyspell-correct-avy-menu
-  :ensure t
   :after flyspell-correct
   :config (require 'flyspell-correct-avy-menu))
 #+end_src
@@ -411,7 +427,6 @@ or session. Otherwise, the addition is permanent."
 #+begin_src emacs-lisp
 (use-package pdf-tools
   :custom (pdf-view-display-size 'fit-height)
-  :ensure t
   :config
   (add-hook 'doc-view-mode-hook 'pdf-view-mode)
   (add-hook 'pdf-view-mode-hook 'pdf-isearch-minor-mode))
@@ -430,7 +445,6 @@ or session. Otherwise, the addition is permanent."
   :ensure t)
 
 (use-package vterm-toggle
-  :ensure t
   :general
   (nmap
     :prefix "SPC o"
@@ -439,12 +453,21 @@ or session. Otherwise, the addition is permanent."
     "T" 'vterm-toggle-cd)
   (nmap
     :keymaps 'vterm-mode-map
-    "q" 'vterm-toggle-hide))
+    "q" 'vterm-toggle-hide)
+  :config
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                   (let ((buffer (get-buffer buffer-or-name)))
+                     (with-current-buffer buffer
+                       (or (equal major-mode 'vterm-mode)
+                           (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                 (display-buffer-reuse-window display-buffer-at-bottom)
+                 (reusable-frames . visible)
+                 (window-height . 0.3))))
 #+end_src
 ** Treesitter
 #+begin_src emacs-lisp
 (use-package tree-sitter
-  :ensure t
   :custom-face
   (tree-sitter-hl-face:property ((t (:slant normal))))
   :init
@@ -458,7 +481,6 @@ or session. Otherwise, the addition is permanent."
 ** Russian keyboard layout
 #+begin_src emacs-lisp
 (use-package reverse-im
-  :ensure t
   :custom (reverse-im-input-methods '("russian-computer"))
   :config (reverse-im-mode t))
 #+end_src
@@ -466,11 +488,9 @@ or session. Otherwise, the addition is permanent."
 ** Save place
 #+begin_src emacs-lisp
 (use-package saveplace
-  :ensure t
   :init (save-place-mode))
 
 (use-package saveplace-pdf-view
-  :ensure t
   :after saveplace)
 #+end_src
 ** Dired
@@ -480,14 +500,13 @@ or session. Otherwise, the addition is permanent."
   :prefix "SPC o"
   "d" 'dired
   "D" (lambda ()
-		(interactive)
-		(dired default-directory)))
+        (interactive)
+        (dired default-directory)))
 #+end_src
 * Projects
 ** Projectile
 #+begin_src emacs-lisp
 (use-package projectile
-  :ensure t
   :init
   (projectile-mode +1))
 #+end_src
