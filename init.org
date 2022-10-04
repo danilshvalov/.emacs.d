@@ -47,6 +47,15 @@
 #+begin_src emacs-lisp
 (setq ns-right-option-modifier nil)
 #+end_src
+** Open in finder
+#+begin_src emacs-lisp
+(nmap
+  :keymaps 'override
+  :prefix "SPC o"
+  "f" (lambda ()
+		(interactive)
+		(call-process-shell-command "open ." nil nil)))
+#+end_src
 * Interface
 ** Font settings
 #+begin_src emacs-lisp
