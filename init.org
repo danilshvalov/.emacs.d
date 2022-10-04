@@ -248,7 +248,9 @@
   (corfu-auto-prefix 2)
 
   :general
-  (imap "C-n" 'completion-at-point)
+  (imap
+	:keymaps 'override
+	"C-n" 'completion-at-point)
 
   :hook ((prog-mode . corfu-mode)
          (shell-mode . corfu-mode)
