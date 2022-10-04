@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: ex
+# uuid: ex
+# key: \ex
+# condition: t
+# --
+\exists

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Rightarrow
+# key: =>
+# condition: t
+# --
+\\implies

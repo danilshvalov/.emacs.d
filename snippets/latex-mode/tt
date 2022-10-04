@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: tt
+# uuid: tt
+# key: \tt
+# condition: t
+# --
+\texttt{$1}

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: dm
+# key: dm
+# condition: t
+# --
+\\[
+	$0
+\\]

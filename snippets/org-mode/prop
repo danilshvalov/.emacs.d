@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: prop
+# key: prop
+# condition: t
+# --
+#+begin_property
+    $0
+#+end_property

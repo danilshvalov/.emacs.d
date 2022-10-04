@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: def
+# key: def
+# condition: t
+# --
+#+begin_definition
+    $0
+#+end_definition

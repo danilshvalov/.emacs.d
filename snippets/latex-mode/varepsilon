@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: varepsilon
+# uuid: varepsilon
+# key: \ve
+# condition: t
+# --
+\varepsilon

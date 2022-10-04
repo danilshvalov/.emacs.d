@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: center
+# uuid: center
+# key: center
+# condition: t
+# --
+\begin{center}
+    $0
+\end{center}

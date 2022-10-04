@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: eq
+# key: eq
+# condition: t
+# --
+\\begin{equation}
+    $0
+\\end{equation}

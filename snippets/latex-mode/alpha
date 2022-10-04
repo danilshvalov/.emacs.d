@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: alpha
+# uuid: alpha
+# key: \a
+# condition: t
+# --
+\alpha

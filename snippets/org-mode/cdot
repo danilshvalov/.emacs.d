@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: cdot
+# key: *
+# condition: t
+# --
+\\cdot

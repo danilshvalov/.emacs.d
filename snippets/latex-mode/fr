@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: fraction
+# key: \fr
+# condition: t
+# --
+\frac{$1}{$2}

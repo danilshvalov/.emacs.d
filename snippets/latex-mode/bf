@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: bf
+# uuid: bf
+# key: \bf
+# --
+\textbf{$1}$0
