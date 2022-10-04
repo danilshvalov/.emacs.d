@@ -411,6 +411,7 @@
 ** PDF Viewer
 #+begin_src emacs-lisp
 (use-package pdf-tools
+  :defer t
   :custom (pdf-view-display-size 'fit-height)
   :config
   (add-hook 'doc-view-mode-hook 'pdf-view-mode)
@@ -459,8 +460,7 @@
   (global-tree-sitter-mode)
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
-(use-package tree-sitter-langs
-  :ensure t)
+(use-package tree-sitter-langs)
 #+end_src
 
 ** Russian keyboard layout
@@ -526,6 +526,7 @@
 #+begin_src emacs-lisp
 (use-package tex
   :straight auctex
+  :defer t
   :custom
   (LaTeX-item-indent 0)
   (LaTeX-indent-level 4))
