@@ -30,6 +30,13 @@
 
 (setq ns-right-option-modifier nil)
 
+(nmap
+  :keymaps 'override
+  :prefix "SPC o"
+  "f" (lambda ()
+		(interactive)
+		(call-process-shell-command "open ." nil nil)))
+
 (custom-set-faces
  `(default ((t (:font "JetBrains Mono 16"))))
  `(fixed-pitch ((t (:inherit (default)))))
@@ -37,6 +44,9 @@
  `(variable-pitch ((t (:font "JetBrains Mono 16")))))
 
 (use-package doom-themes
+  :custom-face
+  (line-number ((t (:slant normal))))
+  (line-number-current-line ((t (:slant normal))))
   :config (load-theme 'doom-palenight t))
 
 (add-hook 'prog-mode-hook (lambda ()
@@ -176,7 +186,9 @@
   (corfu-auto-prefix 2)
 
   :general
-  (imap "C-n" 'completion-at-point)
+  (imap
+	:keymaps 'override
+	"C-n" 'completion-at-point)
 
   :hook ((prog-mode . corfu-mode)
          (shell-mode . corfu-mode)
@@ -244,6 +256,13 @@
   (git-gutter:modified-sign "│")
   (git-gutter:added-sign "│")
   (git-gutter:deleted-sign "│")
+  :general
+  (nvmap
+	:prefix "SPC g"
+	"s" 'git-gutter:stage-hunk
+	"r" 'git-gutter:revert-hunk
+	"n" 'git-gutter:next-hunk
+	"p" 'git-gutter:previous-hunk)
   :init (global-git-gutter-mode +1))
 
 (use-package flycheck
@@ -272,47 +291,21 @@
 (use-package flyspell-correct
   :after flyspell
   :general
-  (nmap :keymaps 'flyspell-mode-map
+  (nmap
+    :keymaps 'flyspell-mode-map
     "z=" 'flyspell-correct-wrapper))
 
-(use-package flyspell-correct-avy-menu
-  :after flyspell-correct
-  :config (require 'flyspell-correct-avy-menu))
-
-(defun ispell-add-word (word &optional scope)
-  "Add WORD to your personal dictionary, within SCOPE.
-SCOPE can be `buffer' or `session' to exclude words only from the current buffer
-or session. Otherwise, the addition is permanent."
-  (interactive
-   (list (progn (require 'flyspell)
-                (car (flyspell-get-word)))
-         (cond ((equal current-prefix-arg '(16))
-                'session)
-               ((equal current-prefix-arg '(4))
-                'buffer))))
-  (require 'flyspell)
-  (cond
-   ((null scope)
-    (ispell-send-string (concat "*" word "\n"))
-    (ispell-send-string "#\n")
-    (flyspell-unhighlight-at (point))
-    (setq ispell-pdict-modified-p '(t)))
-   ((memq scope '(buffer session))
-    (ispell-send-string (concat "@" word "\n"))
-    (add-to-list 'ispell-buffer-session-localwords word)
-    (or ispell-buffer-local-name ; session localwords might conflict
-        (setq ispell-buffer-local-name (buffer-name)))
-    (flyspell-unhighlight-at (point))
-    (if (null ispell-pdict-modified-p)
-        (setq ispell-pdict-modified-p
-              (list ispell-pdict-modified-p)))
-    (if (eq scope 'buffer)
-        (ispell-add-per-file-word-list word))))
-  (ispell-pdict-save t))
+(defun ispell-add-word()
+  (interactive)
+  (let ((current-location (point))
+         (word (flyspell-get-word)))
+    (when (consp word)    
+      (flyspell-do-correct 'save nil (car word) current-location (cadr word) (caddr word) current-location))))
 
 (nmap "zg" 'ispell-add-word)
 
 (use-package pdf-tools
+  :defer t
   :custom (pdf-view-display-size 'fit-height)
   :config
   (add-hook 'doc-view-mode-hook 'pdf-view-mode)
@@ -355,8 +348,7 @@ or session. Otherwise, the addition is permanent."
   (global-tree-sitter-mode)
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
-(use-package tree-sitter-langs
-  :ensure t)
+(use-package tree-sitter-langs)
 
 (use-package reverse-im
   :custom (reverse-im-input-methods '("russian-computer"))
@@ -380,6 +372,14 @@ or session. Otherwise, the addition is permanent."
   :init
   (projectile-mode +1))
 
+(use-package skeletor
+  :defer t
+  :custom
+  (skeletor-user-directory (concat user-emacs-directory "templates"))
+  :config
+  (skeletor-define-template "cpp-cmake"
+    :title "C++ CMake"))
+
 (add-hook 'org-mode-hook
           (lambda ()
             (org-indent-mode +1)
@@ -391,6 +391,7 @@ or session. Otherwise, the addition is permanent."
 
 (use-package tex
   :straight auctex
+  :defer t
   :custom
   (LaTeX-item-indent 0)
   (LaTeX-indent-level 4))
@@ -404,6 +405,18 @@ or session. Otherwise, the addition is permanent."
 (add-hook 'LaTeX-mode-hook 'outline-minor-mode)
 
 (add-hook 'c++-mode-hook 'eglot-ensure)
+
+(use-package cmake-mode
+  :defer t)
+
+(add-hook 'cmake-mode-hook 'eglot-ensure)
+(add-to-list 'eglot-server-programs
+             '(cmake-mode . ("cmake-language-server")))
+
+(defun cmake-version ()
+  (let ((result (shell-command-to-string "cmake --version")))
+    (string-match "\\([0-9]+\\.[0-9]+\\)" result)
+    (match-string 1 result)))
 
 (when (eq system-type 'darwin)
   (customize-set-variable 'native-comp-driver-options '("-Wl,-w")))
