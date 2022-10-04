@@ -1,0 +1,14 @@
+# Ignore all Emacs backup files
+*~
+
+elpa/
+eln-cache/
+auto-save-list/
+straight/
+transient/
+undo-fu-session/
+
+places
+recentf
+history
+projectile-bookmarks.eld
