@@ -34,7 +34,7 @@
   :config (general-evil-setup t))
 #+end_src
 
-* Default keybinds
+* Global keybinds
 ** Toggle fullscreen
 #+begin_src emacs-lisp
 (nmap "C-s-f" 'toggle-frame-fullscreen)
