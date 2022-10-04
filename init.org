@@ -77,12 +77,11 @@
 
 ** Line numbers
 #+begin_src emacs-lisp
-(add-hook 'prog-mode-hook (lambda ()
-                            (display-line-numbers-mode)
-                            (setq display-line-numbers 'relative)))
-(add-hook 'text-mode-hook (lambda ()
-                            (display-line-numbers-mode)
-                            (setq display-line-numbers 'relative)))
+(use-package display-line-numbers
+  :custom
+  (display-line-numbers-type 'relative)
+  :init
+  (global-display-line-numbers-mode +1))
 #+end_src
 
 ** Ring bell
