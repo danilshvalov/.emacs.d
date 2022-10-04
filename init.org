@@ -60,6 +60,9 @@
 ** Theme settings
 #+begin_src emacs-lisp
 (use-package doom-themes
+  :custom-face
+  (line-number ((t (:slant normal))))
+  (line-number-current-line ((t (:slant normal))))
   :config (load-theme 'doom-palenight t))
 #+end_src
 
