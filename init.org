@@ -354,6 +354,11 @@
 	"p" 'git-gutter:previous-hunk)
   :init (global-git-gutter-mode +1))
 #+end_src
+** Git modes
+#+begin_src emacs-lisp
+(use-package git-modes
+  :defer t)
+#+end_src
 * Tools
 ** Flycheck
 #+begin_src emacs-lisp
