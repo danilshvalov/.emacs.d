@@ -545,6 +545,25 @@ or session. Otherwise, the addition is permanent."
 #+begin_src emacs-lisp
 (add-hook 'c++-mode-hook 'eglot-ensure)
 #+end_src
+** CMake
+*** Language support
+#+begin_src emacs-lisp
+(use-package cmake-mode
+  :defer t)
+#+end_src
+*** LSP
+#+begin_src emacs-lisp
+(add-hook 'cmake-mode-hook 'eglot-ensure)
+(add-to-list 'eglot-server-programs
+             '(cmake-mode . ("cmake-language-server")))
+#+end_src
+*** Utilities
+#+begin_src emacs-lisp
+(defun cmake-version ()
+  (let ((result (shell-command-to-string "cmake --version")))
+    (string-match "\\([0-9]+\\.[0-9]+\\)" result)
+    (match-string 1 result)))
+#+end_src
 * Fix bugs
 #+begin_src emacs-lisp
 (when (eq system-type 'darwin)
