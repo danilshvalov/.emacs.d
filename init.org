@@ -501,6 +501,16 @@ or session. Otherwise, the addition is permanent."
   :init
   (projectile-mode +1))
 #+end_src
+** Skeletor
+#+begin_src emacs-lisp
+(use-package skeletor
+  :defer t
+  :custom
+  (skeletor-user-directory (concat user-emacs-directory "templates"))
+  :config
+  (skeletor-define-template "cpp-cmake"
+    :title "C++ CMake"))
+#+end_src
 * Languages
 ** Org-mode
 #+begin_src emacs-lisp
