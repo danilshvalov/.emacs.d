@@ -140,7 +140,6 @@
   (setq yas-indent-line 'fixed)
   (setq yas-triggers-in-field t)
   (setq yas-key-syntaxes '("w_.()" "w_." "w_" "w" "w\\"))
-  (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
   
   (imap
     :keymaps 'org-mode-map
