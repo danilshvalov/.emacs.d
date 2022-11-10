@@ -47,6 +47,8 @@
   :custom
   (display-line-numbers-type 'relative)
   :init
+  (defun disable-line-numbers()
+    (display-line-numbers-mode -1))
   (global-display-line-numbers-mode +1))
 #+end_src
 
@@ -402,9 +404,11 @@
 (use-package pdf-tools
   :defer t
   :custom (pdf-view-display-size 'fit-height)
-  :config
-  (add-hook 'doc-view-mode-hook 'pdf-view-mode)
-  (add-hook 'pdf-view-mode-hook 'pdf-isearch-minor-mode))
+  :init
+  (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
+  :hook
+  (pdf-view-mode . pdf-isearch-minor-mode)
+  (pdf-view-mode . disable-line-numbers))
 #+end_src
 ** Undo 
 #+begin_src emacs-lisp
@@ -430,7 +434,7 @@
     :keymaps 'vterm-mode-map
     "q" 'vterm-toggle-hide)
   :hook
-  (vterm-mode . (lambda () (display-line-numbers-mode 0)))
+  (vterm-mode . disable-line-numbers)
   :config
   (add-to-list 'display-buffer-alist
                '((lambda (buffer-or-name _)
