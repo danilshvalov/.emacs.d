@@ -1,5 +1,7 @@
 # -*- mode: snippet -*-
-# name: q
-# key: \q
+# name: eq 
+# key: eq
 # --
-\quad
+\begin{equation}
+    $0
+\end{equation}

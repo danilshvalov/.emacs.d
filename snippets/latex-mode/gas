@@ -1,6 +1,7 @@
-# key: gas
+# -*- mode: snippet -*-
 # name: gas
+# key: gas
 # --
 \begin{gather*}
-	$0
+    $0
 \end{gather*}
