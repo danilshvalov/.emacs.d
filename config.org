@@ -173,7 +173,7 @@
   :hook 
   (c++-mode . lsp)
   (python-mode . lsp)
-  (latex-mode . lsp)
+  (LaTeX-mode . lsp)
   (cmake-mode . lsp)
   (lsp-completion-mode
    .
