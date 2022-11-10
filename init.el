@@ -1,3 +1,7 @@
+(setq gc-cons-threshold 100000000)
+
+(setq package-enable-at-startup nil)
+
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -24,5 +28,9 @@
 (use-package general
   :config (general-evil-setup t))
 
-(require 'org)
+(use-package org
+  :pin gnu)
+
+(require 'ob-tangle)
+
 (org-babel-load-file (concat user-emacs-directory "config.org"))
