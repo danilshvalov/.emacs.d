@@ -232,14 +232,14 @@
 ** Corfu
 #+begin_src emacs-lisp
 (use-package corfu
-  ;; Optional customizations
   :custom
   (corfu-cycle t)
   (corfu-auto t)
   (corfu-scroll-margin 5)
-  (corfu-auto-delay 0.75)
+  (corfu-auto-delay 0)
   (corfu-count 5)
   (corfu-auto-prefix 2)
+  (corfu-preselect-first nil)
 
   :general
   (imap
@@ -276,7 +276,6 @@
   (evil-mode)
   (general-unbind 'evil-motion-state-map "TAB")
   (general-unbind 'pdf-view-mode-map "SPC")
-
   
   (evil-define-motion evil-next-line (count)
     :type exclusive
