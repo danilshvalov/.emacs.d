@@ -165,6 +165,8 @@
 (use-package lsp-mode
   :custom
   (lsp-completion-provider :none)
+  (lsp-signature-auto-activate nil)
+  (lsp-headerline-breadcrumb-enable nil)
   :init
   (setq lsp-keymap-prefix "C-c l")
   :hook 
