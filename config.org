@@ -3,7 +3,7 @@
 * Global keybinds
 ** Toggle fullscreen
 #+begin_src emacs-lisp
-(nmap "C-s-f" 'toggle-frame-fullscreen)
+(general-define-key "C-s-f" 'toggle-frame-fullscreen)
 #+end_src
 ** Kill buffer
 #+begin_src emacs-lisp
@@ -179,7 +179,6 @@
    (lambda ()
      (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
            '(orderless))))
-  ;; (lsp-mode . lsp-enable-which-key-integration)
   :commands lsp)
 
 (use-package lsp-ui :commands lsp-ui-mode)
