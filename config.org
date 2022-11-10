@@ -19,8 +19,8 @@
   :keymaps 'override
   :prefix "SPC o"
   "f" (lambda ()
-		(interactive)
-		(call-process-shell-command "open ." nil nil)))
+        (interactive)
+        (call-process-shell-command "open ." nil nil)))
 #+end_src
 * Interface
 ** Font settings
@@ -243,8 +243,8 @@
 
   :general
   (imap
-	:keymaps 'override
-	"C-n" 'completion-at-point)
+    :keymaps 'override
+    "C-n" 'completion-at-point)
 
   :hook ((prog-mode . corfu-mode)
          (shell-mode . corfu-mode)
@@ -331,11 +331,11 @@
   (git-gutter:deleted-sign "│")
   :general
   (nvmap
-	:prefix "SPC g"
-	"s" 'git-gutter:stage-hunk
-	"r" 'git-gutter:revert-hunk
-	"n" 'git-gutter:next-hunk
-	"p" 'git-gutter:previous-hunk)
+    :prefix "SPC g"
+    "s" 'git-gutter:stage-hunk
+    "r" 'git-gutter:revert-hunk
+    "n" 'git-gutter:next-hunk
+    "p" 'git-gutter:previous-hunk)
   :init (global-git-gutter-mode +1))
 #+end_src
 ** Git modes
@@ -367,6 +367,7 @@
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
 
 (with-eval-after-load 'ispell
+  (setenv "DICTIONARY" "en_US,ru_RU")
   (setq ispell-really-hunspell t
         ispell-program-name "hunspell"
         ispell-dictionary "en_US,ru_RU")
@@ -375,6 +376,7 @@
   (ispell-set-spellchecker-params)
   (ispell-hunspell-add-multi-dic "en_US,ru_RU"))
 #+end_src
+
 *** Flyspell correct
 #+begin_src emacs-lisp
 (use-package flyspell-correct
@@ -383,13 +385,13 @@
   (nmap
     :keymaps 'flyspell-mode-map
     "z=" 'flyspell-correct-wrapper))
- #+end_src
+#+end_src
 *** Add word
 #+begin_src emacs-lisp
 (defun ispell-add-word()
   (interactive)
   (let ((current-location (point))
-         (word (flyspell-get-word)))
+        (word (flyspell-get-word)))
     (when (consp word)    
       (flyspell-do-correct 'save nil (car word) current-location (cadr word) (caddr word) current-location))))
 
@@ -493,19 +495,22 @@
   (skeletor-completing-read-function 'completing-read)
   :general
   (nmap
-	:prefix "SPC p"
-	:keymaps 'override
-	"c" 'skeletor-create-project)
+    :prefix "SPC p"
+    :keymaps 'override
+    "c" 'skeletor-create-project)
   :config
   (skeletor-define-template "cpp-cmake"
-	:title "C++ CMake"
-	:substitutions
-	'(("__CMAKE_TARGET_NAME__" . (lambda ()
-								   (read-string "CMake project name: "))))))
+    :title "C++ CMake"
+    :substitutions
+    '(("__CMAKE_TARGET_NAME__" . (lambda ()
+                                   (read-string "CMake project name: "))))))
 #+end_src
 * Languages
 ** Org-mode
 #+begin_src emacs-lisp
+(use-package org
+  :pin gnu
+  )
 (add-hook 'org-mode-hook
           (lambda ()
             (setq org-edit-src-content-indentation 0)
