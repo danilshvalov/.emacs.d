@@ -1,5 +1,26 @@
 #+startup: fold
 
+* Macros
+** Custom faces
+#+begin_src emacs-lisp
+(defmacro custom-set-faces! (&rest specs)
+  "Apply a list of face specs as user customizations.
+SPECS is a list of face specs.
+This is a drop-in replacement for `custom-set-face' that allows for a simplified
+face format, e.g.
+  (custom-set-faces!
+   `(mode-line :foreground ,(doom-color 'blue))
+   `(mode-line-buffer-id :foreground ,(doom-color 'fg) :background \"#000000\")
+   '(mode-line-success-highlight :background \"#00FF00\")
+   '(org-tag :background \"#4499FF\")
+   '(org-ellipsis :inherit org-tag)
+   '(which-key-docstring-face :inherit font-lock-comment-face))"
+  `(apply #'custom-set-faces
+          (cl-loop for (face . spec) in (list ,@specs)
+                   if (keywordp (car spec))
+                   collect `(,face ((t ,spec)))
+                   else collect `(,face ,spec))))
+#+end_src
 * Global keybinds
 ** Toggle fullscreen
 #+begin_src emacs-lisp
@@ -34,22 +55,41 @@
 
 ** Theme settings
 #+begin_src emacs-lisp
-(use-package doom-themes
-  :custom-face
-  (line-number ((t (:slant normal))))
-  (line-number-current-line ((t (:slant normal))))
-  :config (load-theme 'doom-palenight t))
+(use-package nano-theme
+  :config
+  (nano-light)
+
+  (custom-set-faces!
+   '(corfu-border :inherit nil)
+   '(corfu-current :inherit (nano-strong nano-subtle))
+   '(corfu-default :inherit 'highlight)
+   '(font-latex-warning-face :inherit 'nano-strong)
+   '(font-latex-math-face :inherit 'nano-strong)
+   '(font-latex-bold-face :inherit 'nano-strong :weight bold)
+   '(font-latex-string-face :inherit 'font-lock-string-face)
+   '(font-latex-verbatim-face :inherit 'nano-strong)
+   '(font-latex-sectioning-0-face :inherit 'nano-strong)
+   '(font-latex-sectioning-1-face :inherit 'nano-strong)
+   '(font-latex-sectioning-2-face :inherit 'nano-strong)
+   '(font-latex-sectioning-3-face :inherit 'nano-strong)
+   '(font-latex-sectioning-4-face :inherit 'nano-strong)
+   '(font-latex-sectioning-5-face :inherit 'nano-strong)
+   '(org-upcoming-deadline :inherit 'nano-critical)
+   '(org-imminent-deadline :inherit 'nano-critical)
+   '(org-upcoming-distant-deadline :inherit 'nano-default)
+   '(org-agenda-date-weekend :inherit 'nano-strong)
+   '(vterm-color-cyan :inherit 'nano-salient))
+  
+  (set-face-attribute 'mode-line nil :box nil)
+  (set-face-attribute 'mode-line-inactive nil :box nil))
 #+end_src
 
 ** Line numbers
 #+begin_src emacs-lisp
-(use-package display-line-numbers
-  :custom
-  (display-line-numbers-type 'relative)
-  :init
-  (defun disable-line-numbers()
-    (display-line-numbers-mode -1))
-  (global-display-line-numbers-mode +1))
+(setq display-line-numbers-type 'relative)
+(defun disable-line-numbers()
+  (display-line-numbers-mode -1))
+(global-display-line-numbers-mode +1)
 #+end_src
 
 ** Ring bell
@@ -76,6 +116,18 @@
 ** Word wrap
 #+begin_src emacs-lisp
 (use-package adaptive-wrap
+  :general
+  (nvmap
+    :prefix "SPC t"
+    "w" (lambda ()
+          (interactive)
+          (if global-visual-line-mode
+              (progn
+                (global-visual-line-mode -1)
+                (toggle-truncate-lines 1))
+            (progn
+              (global-visual-line-mode 1)
+              (toggle-truncate-lines -1)))))
   :config
   (global-visual-line-mode t)
   (add-hook 'visual-line-mode-hook
@@ -98,6 +150,8 @@
 (use-package nano-modeline
   :custom
   (nano-modeline-position 'bottom)
+  (nano-modeline-space-top 0.1)
+  (nano-modeline-space-bottom -0.1)
   :init (nano-modeline-mode 1))
 #+end_src
 ** Todo highlights
@@ -108,11 +162,11 @@
 
   (setq hl-todo-highlight-punctuation ":"
         hl-todo-keyword-faces
-        '(("TODO" warning bold)
+        '(("TODO" success bold)
           ("FIXME" error bold)
           ("REVIEW" font-lock-keyword-face bold)
           ("HACK" font-lock-constant-face bold)
-          ("DEPRECATED" font-lock-doc-face bold)
+          ("DEPRECATED" error bold)
           ("NOTE" success bold)
           ("BUG" error bold)
           ("XXX" font-lock-constant-face bold))))
@@ -126,13 +180,59 @@
 #+begin_src emacs-lisp
 (setq split-width-threshold t)
 #+end_src
+** Tab bar
+#+begin_src emacs-lisp
+(defun tab-bar-formatter (tab i)
+  (let* ((current-p (eq (car tab) 'current-tab))
+         (tab-face (if current-p
+                       'tab-bar-tab
+                     'tab-bar-tab-inactive))
+         (hint-face (if current-p
+                        'tab-bar-tab-hint
+                      'tab-bar-tab-hint-inactive)))
+    (concat (propertize (if tab-bar-tab-hints (format " %d:" i) "")
+                        'face hint-face)
+            (propertize
+             (concat
+              (alist-get 'name tab)
+              (or (and tab-bar-close-button-show
+                       (not (eq tab-bar-close-button-show
+                                (if current-p 'non-selected 'selected)))
+                       tab-bar-close-button)
+                  "")
+              "")
+             'face tab-face))))
+
+(setq tab-bar-close-button-show nil
+      tab-bar-format '(tab-bar-format-tabs-groups tab-bar-separator)
+      tab-bar-history-limit 25
+      tab-bar-new-tab-choice "*scratch*"
+      tab-bar-show 1
+      tab-bar-tab-hints t
+      tab-bar-tab-name-format-function #'tab-bar-formatter)
+
+(custom-set-faces
+ '(tab-bar-tab ((t (:inherit 'nano-salient)))))
+#+end_src
 * Editing
 ** Electric
 #+begin_src emacs-lisp
-(electric-pair-mode +1)
 (electric-indent-mode +1)
 #+end_src
+** Auto parenthesis
+#+begin_src emacs-lisp
+(use-package smartparens
+  :config
+  (smartparens-global-mode 1)
+  (sp-pair "\\[" "\\]")
 
+  ;; (sp-local-pair 'latex-mode "'" "'" :actions nil)
+  ;; (sp-local-pair 'latex-mode "``" "''" :actions nil)
+  ;; (sp-local-pair 'latex-mode "`" "'" :actions nil) 
+  ;; (sp-local-pair 'latex-mode "\"" "\"" :actions nil)
+  ;; (sp-local-pair 'latex-mode "<<" ">>" :trigger "\"")
+  )
+#+end_src
 ** Snippets
 #+begin_src emacs-lisp
 (use-package yasnippet
@@ -142,7 +242,7 @@
   (setq yas-indent-line 'fixed)
   (setq yas-triggers-in-field t)
   (setq yas-key-syntaxes '("w_.()" "w_." "w_" "w" "w\\"))
-  
+
   (imap
     :keymaps 'org-mode-map
     "C-<tab>" 'yas-expand))
@@ -151,6 +251,7 @@
 ** Tabs
 #+begin_src emacs-lisp
 (setq-default tab-width 4)
+(setq-default indent-tabs-mode nil)
 #+end_src
 * Movement
 ** Avy
@@ -160,29 +261,23 @@
   (setq avy-timeout-seconds 0.75)
   (nmap "s" 'avy-goto-char-timer))
 #+end_src
+** Better keybinds
+#+begin_src emacs-lisp
+(nvmap
+  "H" "^"
+  "L" "$")
+#+end_src
 * Completion
 ** LSP
 #+begin_src emacs-lisp
-(use-package lsp-mode
-  :custom
-  (lsp-completion-provider :none)
-  (lsp-signature-auto-activate nil)
-  (lsp-headerline-breadcrumb-enable nil)
-  :init
-  (setq lsp-keymap-prefix "C-c l")
-  :hook 
-  (c++-mode . lsp)
-  (python-mode . lsp)
-  (LaTeX-mode . lsp)
-  (cmake-mode . lsp)
-  (lsp-completion-mode
-   .
-   (lambda ()
-     (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-           '(orderless))))
-  :commands lsp)
-
-(use-package lsp-ui :commands lsp-ui-mode)
+(use-package eglot
+  :hook ((latex-mode . eglot-ensure)
+         (c++-ts-mode . eglot-ensure)
+         (csharp-ts-mode . eglot-ensure))
+  :config
+  (add-to-list 'eglot-server-programs
+               '(latex-mode . '("texlab"))
+               '(c++-ts-mode . '("clangd"))))
 #+end_src
 ** Vertico
 #+begin_src emacs-lisp
@@ -194,7 +289,7 @@
   :init
   (recentf-mode +1)
   (vertico-mode +1)
-  
+
   (setq vertico-count 10
         vertico-resize nil
         vertico-cycle t)
@@ -211,13 +306,44 @@
 (use-package consult
   :custom
   (consult-preview-key nil)
-  :config
+  (consult-find-args "find . -not ( -wholename */.* -prune -o -name build -prune )")
+  :general
   (nmap
     :prefix "SPC f"
     :keymaps 'override
     "r" 'consult-recent-file
-    "f" 'consult-find
-    "g" 'consult-ripgrep))
+    "f" 'find-file
+    "d" 'consult-fd
+    "g" 'consult-ripgrep)
+  :init
+  (defun my-call-process (command &rest args)
+    "Execute COMMAND with ARGS synchronously.
+Returns (STATUS . OUTPUT) when it is done, where STATUS is the returned error
+code of the process and OUTPUT is its stdout output."
+    (with-temp-buffer
+      (cons (or (apply #'call-process command nil t nil (remq nil args))
+                -1)
+            (string-trim (buffer-string)))))
+
+  (defvar consult-fd--history nil)
+  (defvar consult-fd-args "fd --color=never -i -H -E .git --regex")
+  (defun consult-fd (&optional dir initial)
+    "Jump to file under DIR (recursive).
+If INITIAL is non-nil, use as initial input."
+    (interactive)
+    (require 'consult)
+    (let* ((default-directory (or dir default-directory))
+           (prompt-dir (consult--directory-prompt "Find" default-directory))
+           (cmd (split-string-and-unquote consult-fd-args " ")))
+      (find-file
+       (consult--read
+        (split-string (cdr (apply #'my-call-process cmd)) "\n" t)
+        :prompt default-directory
+        :sort nil
+        :initial (if initial (shell-quote-argument initial))
+        :add-history (thing-at-point 'filename)
+        :category 'file
+        :history '(:input consult-fd))))))
 #+end_src
 ** Marginalia
 #+begin_src emacs-lisp
@@ -243,10 +369,20 @@
   (corfu-auto-prefix 2)
   (corfu-preselect-first nil)
 
+  :bind
+  (:map corfu-map
+        ("TAB" . nil)
+        ([tab] . nil))
+
   :general
   (imap
     :keymaps 'override
     "C-n" 'completion-at-point)
+
+  (imap
+    :keymaps 'corfu-map
+    "TAB" nil
+    [tab] nil)
 
   :hook ((prog-mode . corfu-mode)
          (shell-mode . corfu-mode)
@@ -254,12 +390,17 @@
 
   :init
   (global-corfu-mode))
+
+(use-package cape
+  :custom
+  (thing-at-point-file-name-chars "-@~/[:alnum:]_.$#%,:")
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file))
 #+end_src
 * History
 #+begin_src emacs-lisp
-(use-package savehist
-  :init
-  (savehist-mode))
+(savehist-mode)
 #+end_src
 * Evil
 ** Evil mode
@@ -278,7 +419,7 @@
   (evil-mode)
   (general-unbind 'evil-motion-state-map "TAB")
   (general-unbind 'pdf-view-mode-map "SPC")
-  
+
   (evil-define-motion evil-next-line (count)
     :type exclusive
     (if count
@@ -297,7 +438,19 @@
 #+begin_src emacs-lisp
 (use-package evil-collection
   :after evil
-  :config (evil-collection-init))
+  :config
+  (setq evil-collection-want-unimpaired-p nil)
+  (evil-collection-init))
+#+end_src
+** Evil org
+#+begin_src emacs-lisp
+(use-package evil-org
+  :ensure t
+  :after org
+  :hook (org-mode . (lambda () evil-org-mode))
+  :config
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
 #+end_src
 ** Evil highlights
 #+begin_src emacs-lisp
@@ -326,19 +479,19 @@
 #+end_src
 ** Git gutter
 #+begin_src emacs-lisp
-(use-package git-gutter
-  :custom
-  (git-gutter:modified-sign "│")
-  (git-gutter:added-sign "│")
-  (git-gutter:deleted-sign "│")
-  :general
-  (nvmap
-    :prefix "SPC g"
-    "s" 'git-gutter:stage-hunk
-    "r" 'git-gutter:revert-hunk
-    "n" 'git-gutter:next-hunk
-    "p" 'git-gutter:previous-hunk)
-  :init (global-git-gutter-mode +1))
+;; (use-package git-gutter
+;;   :custom
+;;   (git-gutter:modified-sign "│")
+;;   (git-gutter:added-sign "│")
+;;   (git-gutter:deleted-sign "│")
+;;   :general
+;;   (nvmap
+;;     :prefix "SPC g"
+;;     "s" 'git-gutter:stage-hunk
+;;     "r" 'git-gutter:revert-hunk
+;;     "n" 'git-gutter:next-hunk
+;;     "p" 'git-gutter:previous-hunk)
+;;   :init (global-git-gutter-mode +1))
 #+end_src
 ** Git modes
 #+begin_src emacs-lisp
@@ -346,11 +499,6 @@
   :defer t)
 #+end_src
 * Tools
-** Flycheck
-#+begin_src emacs-lisp
-(use-package flycheck
-  :init (global-flycheck-mode))
-#+end_src
 ** Autosave
 #+begin_src emacs-lisp
 (setq make-backup-files nil)
@@ -360,6 +508,10 @@
 #+begin_src emacs-lisp
 (use-package apheleia
   :config
+  (push '(csharpier . ("dotnet" "csharpier"))
+      apheleia-formatters)
+  (setf (alist-get 'csharp-mode apheleia-mode-alist)
+      '(isort csharpier))
   (apheleia-global-mode +1))
 #+end_src
 ** Spelling
@@ -394,7 +546,7 @@
   (interactive)
   (let ((current-location (point))
         (word (flyspell-get-word)))
-    (when (consp word)    
+    (when (consp word)
       (flyspell-do-correct 'save nil (car word) current-location (cadr word) (caddr word) current-location))))
 
 (nmap "zg" 'ispell-add-word)
@@ -405,57 +557,90 @@
   :defer t
   :custom (pdf-view-display-size 'fit-height)
   :init
-  (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
+  (pdf-tools-install)
+  ;; (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
   :hook
   (pdf-view-mode . pdf-isearch-minor-mode)
   (pdf-view-mode . disable-line-numbers))
 #+end_src
-** Undo 
+** Undo
 #+begin_src emacs-lisp
 (use-package undo-fu)
 
 (use-package undo-fu-session
   :after undo-fu
-  :init (global-undo-fu-session-mode))
+  :init (undo-fu-session-global-mode))
 #+end_src
+** Popper
+#+begin_src emacs-lisp
+(use-package popper
+  :ensure t
+  :bind (("C-`"   . popper-toggle-latest)
+         ("M-`"   . popper-cycle)
+         ("C-M-`" . popper-toggle-type))
+  :init
+  (setq popper-reference-buffers
+        '("\\*Messages\\*"
+          "Output\\*$"
+          "\\*Async Shell Command\\*"
+          help-mode
+          compilation-mode))
+  (setq popper-reference-buffers
+        (append popper-reference-buffers
+                '("^\\*eshell.*\\*$" eshell-mode ;eshell as a popup
+                  "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
+                  "^\\*term.*\\*$"   term-mode   ;term as a popup
+                  "*vterm*"  vterm-mode  ;vterm as a popup
+                  )))
+  (setq popper-window-height
+        (lambda (win)
+          "Determine the height of popup window WIN by fitting it to the buffer's content."
+          (fit-window-to-buffer
+           win
+           (floor (frame-height) 3)
+           (floor (frame-height) 3))))
+  (popper-mode +1)
+  (popper-echo-mode +1))
+#+end_src
+
 ** Terminal
 #+begin_src emacs-lisp
 (use-package vterm
-  :ensure t)
-
-(use-package vterm-toggle
+  :after (popper evil)
   :general
   (nmap
-    :prefix "SPC o"
+    :prefix "SPC t"
     :keymaps 'override
-    "t" 'vterm-toggle
-    "T" 'vterm-toggle-cd)
+    "t" 'toggle-vterm
+    "T" 'toggle-vterm-there)
   (nmap
     :keymaps 'vterm-mode-map
-    "q" 'vterm-toggle-hide)
+    "q" 'delete-window)
   :hook
-  (vterm-mode . disable-line-numbers)
-  :config
-  (add-to-list 'display-buffer-alist
-               '((lambda (buffer-or-name _)
-                   (let ((buffer (get-buffer buffer-or-name)))
-                     (with-current-buffer buffer
-                       (or (equal major-mode 'vterm-mode)
-                           (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
-                 (display-buffer-reuse-window display-buffer-at-bottom)
-                 (reusable-frames . visible)
-                 (window-height . 0.3))))
+  (vterm-mode . disable-line-numbers))
+
+
+(defun toggle-vterm(&optional args)
+  (interactive "p")
+  (let* ((default-directory (or (projectile-project-root) default-directory)))
+    (vterm args)
+    (evil-insert-state)))
+
+(defun toggle-vterm-there(&optional args)
+  (interactive "p")
+  (let* ((project-directory (or (projectile-project-root) default-directory)))
+    (vterm args)
+    (vterm-send-string (concat "cd " project-directory))
+    (vterm-send-return)
+    (vterm-clear)
+    (evil-insert-state)))
 #+end_src
+
 ** Treesitter
 #+begin_src emacs-lisp
-(use-package tree-sitter
-  :custom-face
-  (tree-sitter-hl-face:property ((t (:slant normal))))
-  :init
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-
-(use-package tree-sitter-langs)
+(use-package treesit-auto
+  :config
+  (global-treesit-auto-mode))
 #+end_src
 
 ** Russian keyboard layout
@@ -467,8 +652,7 @@
 
 ** Save place
 #+begin_src emacs-lisp
-(use-package saveplace
-  :init (save-place-mode))
+(save-place-mode)
 
 (use-package saveplace-pdf-view
   :after saveplace)
@@ -511,33 +695,47 @@
 #+end_src
 * Languages
 ** Org-mode
+*** Settings
 #+begin_src emacs-lisp
-(use-package org
-  :pin gnu
-  )
 (add-hook 'org-mode-hook
           (lambda ()
-            (setq org-edit-src-content-indentation 0)
-            (setq org-confirm-babel-evaluate nil)
+            (setq calendar-week-start-day 1
+                  org-agenda-start-on-weekday 1
+                  org-edit-src-content-indentation 0
+                  org-confirm-babel-evaluate nil
+                  org-agenda-skip-deadline-if-done t
+                  org-agenda-skip-scheduled-if-done t
+                  org-agenda-skip-timestamp-if-done t)
             (org-indent-mode +1)))
+#+end_src
+*** Mappings
+#+begin_src emacs-lisp
+(nmap
+  :prefix "SPC o"
+  "a" 'org-agenda)
+
+(nmap
+  :keymaps 'org-mode-map
+  :prefix "SPC oi"
+  "d" 'org-deadline)
 #+end_src
 ** Latex
 *** Auctex
 #+begin_src emacs-lisp
 (use-package tex
-  :straight auctex
-  :defer t
+  :elpaca auctex
   :custom
   (LaTeX-item-indent 0)
-  (LaTeX-indent-level 4))
+  (LaTeX-indent-level 4)
+  (tex-fontify-script nil)
+  (TeX-close-quote ">>")
+  (TeX-open-quote "<<")
+  (font-latex-fontify-script nil))
 #+end_src
-*** Pretty symbols
+*** Indent
 #+begin_src emacs-lisp
-(add-hook 'TeX-update-style-hook 'prettify-symbols-mode)
-#+end_src
-*** Outline
-#+begin_src emacs-lisp
-(add-hook 'LaTeX-mode-hook 'outline-minor-mode)
+(with-eval-after-load 'latex
+    (add-to-list 'LaTeX-indent-environment-list '("align*")))
 #+end_src
 ** CMake
 *** Language support
@@ -552,8 +750,43 @@
     (string-match "\\([0-9]+\\.[0-9]+\\)" result)
     (match-string 1 result)))
 #+end_src
+** C++
+#+begin_src emacs-lisp
+(setq c-basic-offset 4)
+
+(defun my-c-setup ()
+   (c-set-offset 'innamespace 0))
+(add-hook 'c++-mode-hook 'my-c-setup)
+#+end_src
 * Fix bugs
 #+begin_src emacs-lisp
 (when (eq system-type 'darwin)
   (customize-set-variable 'native-comp-driver-options '("-Wl,-w")))
+#+end_src
+#+begin_src emacs-lisp
+(use-package exec-path-from-shell
+  :config
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
+#+end_src
+
+#+begin_src emacs-lisp
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+#+end_src
+
+#+begin_src emacs-lisp
+(nvmap
+  :prefix "C-x"
+  "j" 'next-buffer
+  "k" 'previous-buffer)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package flycheck
+  :init (global-flycheck-mode))
+
+(use-package flycheck-eglot
+  :after (flycheck eglot)
+  :config
+  (global-flycheck-eglot-mode 1))
 #+end_src
