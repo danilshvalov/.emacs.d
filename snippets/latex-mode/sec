@@ -1,6 +1,5 @@
 # -*- mode: snippet -*-
 # name: sec
-# key: \sec
-# uuid: sec
+# key: sec
 # --
 \section{$1}

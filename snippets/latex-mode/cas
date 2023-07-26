@@ -2,6 +2,6 @@
 # name: cas
 # key: cas
 # --
-\begin{cases}
-	$0
-\end{cases}
+\begin{dcases*}
+    $0
+\end{dcases*}

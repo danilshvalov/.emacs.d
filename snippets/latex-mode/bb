@@ -1,7 +1,5 @@
 # -*- mode: snippet -*-
 # name: bb
-# uuid: bb
-# key: \bb
-# condition: t
+# key: bb
 # --
 \mathbb{$1}

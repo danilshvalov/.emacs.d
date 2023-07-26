@@ -1,7 +1,6 @@
 # -*- mode: snippet -*-
 # name: ssub
-# uuid: ssub
-# key: \ssub
+# key: ssub
 # condition: t
 # --
 \subsubsection{$1}

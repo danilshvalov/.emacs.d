@@ -1,6 +1,5 @@
 # -*- mode: snippet -*-
 # name: bf
-# uuid: bf
-# key: \bf
+# key: bf
 # --
 \textbf{`(yas-selected-text)`$1}$0

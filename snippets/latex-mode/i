@@ -1,7 +1,5 @@
 # -*- mode: snippet -*-
 # name: i
-# uuid: i
 # key: \i
-# condition: t
 # --
 \item $0

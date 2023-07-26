@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: ex
-# uuid: ex
-# key: \ex
-# condition: t
+# key: ex
 # --
-\exists
+\begin{example}
+    $0
+\end{example}

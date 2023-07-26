@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: dfr 
-# key: \dfr
+# key: dfr
 # --
 \dfrac{$1}{$2}

@@ -1,8 +1,6 @@
 # -*- mode: snippet -*-
 # name: center
-# uuid: center
-# key: center
-# condition: t
+# key: cen
 # --
 \begin{center}
     $0

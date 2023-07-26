@@ -1,9 +1,0 @@
-# -*- mode: snippet -*-
-# name: quote
-# uuid: quote
-# key: quote
-# condition: t
-# --
-#+begin_quote
-$0
-#+end_quote

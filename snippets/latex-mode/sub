@@ -1,6 +1,5 @@
 # -*- mode: snippet -*-
 # name: sub
-# key: \sub
-# uuid: sub
+# key: sub
 # --
 \subsection{$1}

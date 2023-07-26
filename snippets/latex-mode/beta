@@ -1,7 +1,5 @@
 # -*- mode: snippet -*-
 # name: beta
-# uuid: beta
-# key: \b
-# condition: t
+# key: be
 # --
 \beta

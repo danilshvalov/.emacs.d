@@ -1,30 +1,6 @@
-(setq gc-cons-threshold 100000000)
+;; -*-lexical-binding: t -*-
 
-;; (package-initialize)
-
-;; (setq package-enable-at-startup nil)
-
-;; (defvar bootstrap-version)
-;; (let ((bootstrap-file
-;;        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-;;       (bootstrap-version 5))
-;;   (unless (file-exists-p bootstrap-file)
-;;     (with-current-buffer
-;;         (url-retrieve-synchronously
-;;          "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-;;          'silent 'inhibit-cookies)
-;;       (goto-char (point-max))
-;;       (eval-print-last-sexp)))
-;;   (load bootstrap-file nil 'nomessage))
-
-;; Install use-package
-;; (straight-use-package 'use-package)
-
-;; Configure use-package to use straight.el by default
-;; (use-package straight
-;;   :custom (straight-use-package-by-default t))
-
-(defvar elpaca-installer-version 0.3)
+(defvar elpaca-installer-version 0.5)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -39,6 +15,7 @@
   (add-to-list 'load-path (if (file-exists-p build) build repo))
   (unless (file-exists-p repo)
     (make-directory repo t)
+    (when (< emacs-major-version 28) (require 'subr-x))
     (condition-case-unless-debug err
         (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
                  ((zerop (call-process "git" nil buffer t "clone"
@@ -60,32 +37,19 @@
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
-(setq package-enable-at-startup nil)
-
 (elpaca elpaca-use-package
-  ;; Enable :elpaca use-package keyword.
   (elpaca-use-package-mode)
-  ;; Assume :elpaca t unless otherwise specified.
   (setq elpaca-use-package-by-default t))
 
-;; Block until current queue processed.
 (elpaca-wait)
 
-(require 'use-package-ensure)
-(setq use-package-always-ensure t)
-(setq use-package-always-demand t)
+(add-to-list 'load-path (file-name-concat user-emacs-directory "modules"))
 
-(use-package general
-  :config (general-evil-setup t))
+;; (setq use-package-compute-statistics t)
 
-(use-package org
-  :pin gnu
-  :custom
-  (org-agenda-files '("~/org/")))
+(load "~/.config/emacs/config.el")
 
-(elpaca-wait)
+(setq custom-file (make-temp-file ""))
 
-(require 'ob-tangle)
-(require 'general)
-
-(org-babel-load-file (concat user-emacs-directory "config.org"))
+(setq gc-cons-threshold 800000
+      gc-cons-percentage 0.1)
